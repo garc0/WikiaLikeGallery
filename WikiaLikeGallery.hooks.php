@@ -78,11 +78,11 @@ class WikiaLikeGalleryTag extends TraditionalImageGallery{
 		$badFileLookup = $services->getBadFileLookup();
 
 					
-		if(intval($this->mWidths) < self::SLIDER_MIN_IMG_WIDTH)
-		$this->mWidths = "" . self::SLIDER_MIN_IMG_WIDTH;
+		//if(intval($this->mWidths) < self::SLIDER_MIN_IMG_WIDTH)
+		//$this->mWidths = "" . self::SLIDER_MIN_IMG_WIDTH;
 		
-		if(intval($this->mHeights) < self::SLIDER_MIN_IMG_HEIGHT)
-			$this->mHeights = "" . self::SLIDER_MIN_IMG_HEIGHT;
+		//if(intval($this->mHeights) < self::SLIDER_MIN_IMG_HEIGHT)
+		//	$this->mHeights = "" . self::SLIDER_MIN_IMG_HEIGHT;
 
 		$imageGallery  = Xml::openElement('div', ['class' => 'slider__list', 'id' => "3000|$this->mHeights"]);
         $navBoxThumbs  = Xml::openElement('div', ['class' => 'slider__nav__thumbs']);
@@ -155,9 +155,11 @@ class WikiaLikeGalleryTag extends TraditionalImageGallery{
 
 					Linker::processResponsiveImages( $img, $thumb, $transformOptions );
 					
-					$imageGallery .= Xml::openElement('div', ['class' => 'slider__gallerybox slider__gallerybox__img', 'style' => "height:$this->mHeights;"]) .
-								$thumb->toHtml( $imageParameters ) .
-								Xml::closeElement('div');
+					$imageGallery .= 
+									Xml::openElement('div', 
+									['align' => 'center','class' => 'slider__gallerybox slider__gallerybox__img', 'style' => 'height:' . $this->mHeights. 'px;']) .
+									$thumb->toHtml( $imageParameters ) .
+									Xml::closeElement('div');
 					
 				}
 				$params = [
@@ -234,7 +236,7 @@ class WikiaLikeGalleryTag extends TraditionalImageGallery{
 
 		$output = '';
 		$styleAttrs = ($center == 'true' ? "style='margin-left:auto;margin-right:auto'" : "");
-		$output .= Xml::openElement('div', ['id' => $id, 'class' => 'slider', 'style' => "width:$this->mWidths;height:$this->mHeights"] ) . $Html . Xml::closeElement('div');
+		$output .= Xml::openElement('div', ['id' => $id, 'class' => 'slider', 'style' => "width:$this->mWidths" . "px;height:$this->mHeights" . "px;"] ) . $Html . Xml::closeElement('div');
 		return $output;
 	}
 

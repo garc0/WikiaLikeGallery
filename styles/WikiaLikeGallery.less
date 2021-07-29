@@ -230,11 +230,11 @@
         
         &__img img {
             display: block;
-            max-width: 100%;
-            height: auto;
-            min-width: 100%; 
-            min-height: 100%; 
-            position: relative;  
+            position: relative;
+            margin:0 auto;
+            width:-moz-fit-content;
+            width:-webkit-fit-content;
+            width:fit-content;
         }
     }
       
@@ -243,21 +243,21 @@
 .orientation-bottom {
     width: 100%;
     bottom: 0px;
-    background: rgba(4,4,16,0.75); /*linear-gradient(to top, rgba(4,4,16,0.75), rgba(4,4,16,0.75),  transparent);*/
+    background: rgba(4,4,16,0.75);
     text-align: left;
 }
 
 .orientation-top {
     width: 100%;
     top: 0px;
-    background: rgba(4,4,16,0.75); /*linear-gradient(to top, rgba(4,4,16,0.75), rgba(4,4,16,0.75),  transparent);*/
+    background: rgba(4,4,16,0.75); 
     text-align: left;
 }
 
 .orientation-right {
     height: 100%;
     right: 0px;
-    background: rgba(4,4,16,0.75); /*linear-gradient(to top, rgba(4,4,16,0.75), rgba(4,4,16,0.75),  transparent);*/
+    background: rgba(4,4,16,0.75);
     text-align: left;
 }
 
@@ -265,7 +265,7 @@
 .orientation-left {
     height: 100%;
     left: 0px;
-    background: rgba(4,4,16,0.75); /*linear-gradient(to top, rgba(4,4,16,0.75), rgba(4,4,16,0.75),  transparent);*/
+    background: rgba(4,4,16,0.75);
     text-align: left;
 }
 
