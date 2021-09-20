@@ -1,10 +1,8 @@
 <?php
 use \ImageGalleryBase;
-use \TraditionalImageGallery;
-use \Html;
-use \Xml;
+use TraditionalImageGallery;
+use Xml;
 
-use MediaWiki\Linker\LinkRenderer;
 use MediaWiki\MediaWikiServices;
 
 class WikiaLikeGalleryTag extends TraditionalImageGallery{
@@ -41,10 +39,6 @@ class WikiaLikeGalleryTag extends TraditionalImageGallery{
 			$this->mParams['position'] = $options['center'];
 		}
 
-		//if ( !isset( $options['widths'] ) ) {
-		//	$this->mWidths = SLIDER_MIN_IMG_WIDTH;
-		//}
-
 		if ( isset( $options['bordercolor'] ) ){
 			$this->mParams['bordercolor'] = sanitizeCssColor($options['bordercolor']);
 		}
@@ -78,11 +72,11 @@ class WikiaLikeGalleryTag extends TraditionalImageGallery{
 		$badFileLookup = $services->getBadFileLookup();
 
 					
-		//if(intval($this->mWidths) < self::SLIDER_MIN_IMG_WIDTH)
-		//$this->mWidths = "" . self::SLIDER_MIN_IMG_WIDTH;
+		if(intval($this->mWidths) <= 120)
+			$this->mWidths = "" . self::SLIDER_MIN_IMG_WIDTH;
 		
-		//if(intval($this->mHeights) < self::SLIDER_MIN_IMG_HEIGHT)
-		//	$this->mHeights = "" . self::SLIDER_MIN_IMG_HEIGHT;
+		if(intval($this->mHeights) <= 75)
+			$this->mHeights = "" . self::SLIDER_MIN_IMG_HEIGHT;
 
 		$imageGallery  = Xml::openElement('div', ['class' => 'slider__list', 'id' => "3000|$this->mHeights"]);
         $navBoxThumbs  = Xml::openElement('div', ['class' => 'slider__nav__thumbs']);
