@@ -1,7 +1,4 @@
 <?php
-use \ImageGalleryBase;
-use TraditionalImageGallery;
-use Xml;
 
 use MediaWiki\MediaWikiServices;
 
@@ -219,7 +216,7 @@ class WikiaLikeGalleryTag extends TraditionalImageGallery{
         $navControls .= "<div class=\"slider__controls__prev\"></div> ";
         $navControls .= "<div class=\"slider__controls__next\"></div> ";
 
-		$Html =  $imageGallery .$navControls . $navBox;
+		$Html =  $imageGallery . $navControls . $navBox;
 
 		$id = (isset($mParams['id']) ? $mParams['id'] : 'slider_' . rand());
 
@@ -237,15 +234,183 @@ class WikiaLikeGalleryTag extends TraditionalImageGallery{
 	
 }
 
+class WikiaLikePackedGallery extends TraditionalImageGallery{
+	
+	protected $mParams;
+
+	
+	protected function setParam( $name, $data){
+		$this->mParams[$name] = $data;
+	}
+
+	protected function getParam( $name, $data){
+		if(isset($this->mParams[$name]))
+			return $this->mParams[$name];
+		return null;
+	}
+
+	static public function sanitizeCssColor($color) {
+		$color = preg_replace('@[^a-z0-9#]@i', '', $color);
+		return $color;
+	}
+
+	public function setAdditionalOptions( $options ) {
+		if ( isset( $options['id'] ) )
+			$this->mParams['id'] = $options['id'];
+
+		if ( isset( $options['captiontextcolor'] ) ){
+			$this->mParams['captiontextcolor'] = sanitizeCssColor($options['captiontextcolor']);
+		}
+
+		if ( isset( $options['widths'] ) ){
+			$this->mParams['widths'] = $options['widths'];
+		}else{
+			$this->mParams['widths'] = "195";
+		}
+
+		if ( isset( $options['spacing'] ) ){
+			$this->mParams['spacing'] = $options['spacing'];
+		}else{
+			$this->mParams['spacing'] = 'medium';
+		}
+
+		if ( isset( $options['orientation'] ) ){
+			$this->mParams['orientation'] = $options['orientation'];
+		}
+	}
+
+	public function toHTML(){
+		$services = MediaWikiServices::getInstance();
+		$repoGroup = $services->getRepoGroup();
+		$badFileLookup = $services->getBadFileLookup();
+
+		$width = $this->mParams['widths'];
+		$spacing = $this->mParams['spacing'];
+		switch ($spacing){
+			case 'large': $spacing = '1.5'; break;
+			case 'medium': $spacing = '1.0'; break;
+			case 'small': $spacing = '0.5'; break;
+			default: $spacing = '1.0';
+		}
+		
+		$html = Xml::openElement('div', ['class' => 'wikialike__gallery']);
+		
+		foreach ( $this->mImages as [ $nt, $text, $alt, $link, $handlerOpts, $loading ] ) {
+			$descQuery = false;
+			if ( $nt->getNamespace() === NS_FILE ) {
+				# Get the file...
+				if ( $resolveFilesViaParser ) {
+					# Give extensions a chance to select the file revision for us
+					$options = [];
+					Hooks::runner()->onBeforeParserFetchFileAndTitle(
+						$this->mParser, $nt, $options, $descQuery );
+					# Fetch and register the file (file title may be different via hooks)
+					list( $img, $nt ) = $this->mParser->fetchFileAndTitle( $nt, $options );
+				} else {
+					$img = $repoGroup->findFile( $nt );
+				}
+			} else {
+				$img = false;
+			}
+
+			$params = [
+				'width' => intval($width),
+				'height' => intval($width)*0.74871
+			];;
+			$transformOptions = $params + $handlerOpts;
+
+			$thumb = false;
+
+			if ( $loading === ImageGalleryBase::LOADING_LAZY ) {
+				$imageParameters['loading'] = 'lazy';
+			}
+
+			if ( !$img ) {
+				# We're dealing with a non-image, spit out the name and be done with it.
+				$thumbhtml = '<div class="thumb" style="height: '
+					. ( $this->getThumbPadding() + $this->mHeights ) . 'px;">'
+					. htmlspecialchars( $nt->getText() ) . '</div>';
+
+				if ( $resolveFilesViaParser ) {
+					$this->mParser->addTrackingCategory( 'broken-file-category' );
+				}
+			} elseif ( $this->mHideBadImages &&
+				$badFileLookup->isBadFile( $nt->getDBkey(), $this->getContextTitle() )
+			) {
+				# The image is blacklisted, just show it as a text link.
+				$thumbhtml = '<div class="thumb" style="height: ' .
+					( $this->getThumbPadding() + $this->mHeights ) . 'px;">' .
+					$linkRenderer->makeKnownLink( $nt, $nt->getText() ) .
+					'</div>';
+			} else {
+				{
+					$thumb = $img->transform( $transformOptions );
+					$imageParameters = [
+						'alt' => $alt,
+						'custom-url-link' => "",
+					];
+
+					if ( $alt == '' && $text == '' ) {
+						$imageParameters['alt'] = $nt->getText();
+					}
+
+					$this->adjustImageParameters( $thumb, $imageParameters );
+
+					Linker::processResponsiveImages( $img, $thumb, $transformOptions );
+
+					$html .= Xml::openElement('div', 
+									['class' => 'wikialike-packed__item', 'style' => 'width:' . $width . 'px;padding:'. $spacing .'em;'])
+									. Xml::openElement('div', ['class' => 'wikialike-packed__lightbox', 'style' => 'height:' . $width . 'px; width:' . $width .'px;'])
+										. Xml::openElement('div', ['class' => 'wikialike-packed__image', 'style' => 'height: 100%; object-fit: cover;width: 100%;'])
+											. $thumb->toHtml( $imageParameters )
+										. Xml::closeElement('div')
+									. Xml::closeElement('div')
+									. Xml::openElement('div', ['class' => 'wikialike-packed__caption']) 
+										. $text 
+									. Xml::closeElement('div')
+									. Xml::closeElement('div');
+					
+				}
+				$params = [
+					'width' => 64,
+					'height' => 50
+				];
+				$transformOptions = $params + $handlerOpts;
+
+				$thumb = $img->transform( $params );
+
+				$imageParameters = [
+					'alt' => $alt,
+					'custom-url-link' => "",
+				];
+
+				if ( $alt == '' && $text == '' ) {
+					$imageParameters['alt'] = $nt->getText();
+				}
+
+				$this->adjustImageParameters( $thumb, $imageParameters );
+
+				Linker::processResponsiveImages( $img, $thumb, $params );
+				
+			}
+			
+		}
+
+		$html .= Xml::closeElement('div');
+		return $html;
+	}
+}
+
 class WikiaLikeGalleryHooks{
 	public static function onGalleryGetModes( array &$modeArray ) {
 		$modeArray['slider'] = WikiaLikeGalleryTag::class;
+		$modeArray['wikiapacked'] = WikiaLikePackedGallery::class;
 	}
 
 	public static function extensionHook() {
 		global $wgOut;
 		$wgOut->addModules( 'ext.slider.icons' );
-		$wgOut->addModules('ext.slider.main');
+		$wgOut->addModules( 'ext.slider.main' );
 		return true;
 	}
 }

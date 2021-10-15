@@ -22,6 +22,7 @@
 	"AutoloadClasses": {
 		"WikiaLikeGallery": "WikiaLikeGallery.hooks.php",
 		"WikiaLikeGalleryTag": "WikiaLikeGallery.hooks.php",
+		"WikiaLikePackedGallery": "WikiaLikeGallery.hooks.php",
 		"WikiaLikeGalleryHooks": "WikiaLikeGallery.hooks.php"
 	},
 	"ResourceModules": {
